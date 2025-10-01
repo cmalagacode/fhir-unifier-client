@@ -1,81 +1,107 @@
-name: deploy.yml
-on:
-  push:
-    tags: v*
-jobs:
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v5
-      - name: Setup CMake
-        uses: lukka/get-cmake@latest
-      - name: Configure Release Build Script
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-      - name: Build Executable
-        run: cmake --build build
-      - name: Run Tests
-        run: build\bin\tests
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ runner.os }}-binary
-          path: build\bin\
-  build-linux:
-    needs: build-windows
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v5
-      - name: Setup CMake
-        uses: lukka/get-cmake@latest
-      - name: Configure Release Build Script
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-      - name: Build Executable
-        run: cmake --build build
-      - name: Run Tests
-        run: ./build/bin/tests
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-         name: ${{ runner.os }}-binary
-         path: build/bin/
-  build-macos:
-    needs: build-linux
-    runs-on: macos-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v5
-      - name: Setup CMake
-        uses: lukka/get-cmake@latest
-      - name: Configure Release Build Script
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-      - name: Build Executable
-        run: cmake --build build
-      - name: Run Tests
-        run: ./build/bin/tests
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ runner.os }}-binary
-          path: build/bin/
-  release:
-    needs: [build-linux, build-windows, build-macos]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v5
-        with:
-          path: release-assets
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          files: |
-            release-assets/windows-latest-binary/*
-            release-assets/ubuntu-latest-binary/*
-            release-assets/macos-latest-binary/*
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  name: deploy.yml
+  on:
+    push:
+      tags: v*
+  jobs:
+    build-windows:
+      runs-on: windows-latest
+      steps:
+        - name: Checkout Code
+          uses: actions/checkout@v5
+        - name: Setup CMake
+          uses: lukka/get-cmake@latest
+        - name: Install curl
+          run: choco install curl
+        - name: Configure Release Build Script
+          run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        - name: Build Executable
+          run: cmake --build build
+        - name: Run Tests
+          run: build\bin\tests
+        - name: Generate SHA-256 hashes on Windows
+          run: |
+           Get-ChildItem build/bin/*.exe | ForEach-Object {
+             $hash = Get-FileHash $_.FullName -Algorithm SHA256
+             "$($_.Name) $($hash.Hash)" | Out-File -Append build\bin\checksums.txt
+           }
+          shell: pwsh
+        - name: Upload Build Artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: ${{ runner.os }}-binary
+            path: build\bin\
+    build-linux:
+      needs: build-windows
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout Code
+          uses: actions/checkout@v5
+        - name: Setup CMake
+          uses: lukka/get-cmake@latest
+        - name: Configure Release Build Script
+          run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        - name: Build Executable
+          run: cmake --build build
+        - name: Run Tests
+          run: ./build/bin/tests
+        - name: Generate SHA-256 hashes
+          run: |
+            for file in build/bin/*.exe; do
+              shasum -a 256 "$file" >> build/bin/checksums.txt
+            done
+        - name: Upload Build Artifact
+          uses: actions/upload-artifact@v4
+          with:
+           name: ${{ runner.os }}-binary
+           path: build/bin/
+    build-macos:
+      needs: build-linux
+      runs-on: macos-latest
+      steps:
+        - name: Checkout Code
+          uses: actions/checkout@v5
+        - name: Setup CMake
+          uses: lukka/get-cmake@latest
+        - name: Configure Release Build Script
+          run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        - name: Build Executable
+          run: cmake --build build
+        - name: Run Tests
+          run: ./build/bin/tests
+        - name: Generate SHA-256 hashes
+          run: |
+            for file in build/bin/*.exe; do
+              shasum -a 256 "$file" >> build/bin/checksums.txt
+            done
+        - name: Upload Build Artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: ${{ runner.os }}-binary
+            path: build/bin/
+    release:
+      needs: [build-linux, build-windows, build-macos]
+      runs-on: ubuntu-latest
+      steps:
+        - name: Download Artifacts
+          uses: actions/download-artifact@v5
+          with:
+            path: release-assets
+        - name: Consolidate Checksums
+          run: |
+            mkdir -p release-assets/checksums
+            cp release-assets/windows-latest-binary/checksums.txt release-assets/checksums/windows-checksums.txt
+            cp release-assets/ubuntu-latest-binary/checksums.txt release-assets/checksums/linux-checksums.txt
+            cp release-assets/macos-latest-binary/checksums.txt release-assets/checksums/macos-checksums.txt
+        - name: Create GitHub Release
+          uses: softprops/action-gh-release@v1
+          with:
+            tag_name: ${{ github.ref_name }}
+            name: Release ${{ github.ref_name }}
+            files: |
+              release-assets/windows-latest-binary/*
+              release-assets/ubuntu-latest-binary/*
+              release-assets/macos-latest-binary/*
+              release-assets/checksums/*
+            generate_release_notes: true
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
