@@ -26,7 +26,7 @@ jobs:
         run: .\vcpkg\vcpkg.exe install curl
 
       - name: Configure Release Build Script
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\scripts\buildsystems\vcpkg.cmake -DCPR_USE_SYSTEM_CURL=ON
 
       - name: Build Executable
         run: cmake --build build
