@@ -1,0 +1,5 @@
+add_library(cli STATIC process.cpp)
+target_include_directories(cli PUBLIC include)
+target_link_libraries(fhir_unifier_client PRIVATE cli)
+target_link_libraries(cli PUBLIC cpr::cpr)
+target_link_libraries(cli PUBLIC nlohmann_json::nlohmann_json)
