@@ -127,11 +127,9 @@ jobs:
 
       - name: Consolidate Checksums
         run: |
-          mkdir -p release-assets/checksums
           cp release-assets/Windows-binary/checksums.txt release-assets/checksums/windows-checksums.txt || echo "No Windows checksums"
           cp release-assets/Linux-binary/checksums.txt release-assets/checksums/linux-checksums.txt || echo "No Linux checksums"
           cp release-assets/macOS-binary/checksums.txt release-assets/checksums/macos-checksums.txt || echo "No macOS checksums"
-          cat release-assets/checksums/*.txt > release-assets/checksums/checksums.txt || echo "No combined checksums"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -142,7 +140,6 @@ jobs:
             release-assets/Windows-binary/*
             release-assets/Linux-binary/*
             release-assets/macOS-binary/*
-            release-assets/checksums/*
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
