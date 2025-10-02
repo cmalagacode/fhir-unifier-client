@@ -21,10 +21,12 @@ jobs:
           .\vcpkg\bootstrap-vcpkg.bat
           .\vcpkg\vcpkg install curl cpr
 
-      - name: Configure Release Build with vcpkg
+      - name: Configure Release Build
         run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release ^
-                -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake
+          cmake -S . -B build `
+                -DCMAKE_BUILD_TYPE=Release `
+                -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        shell: pwsh
 
       - name: Build Executable
         run: cmake --build build --config Release
