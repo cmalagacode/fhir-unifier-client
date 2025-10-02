@@ -33,7 +33,7 @@ jobs:
 
       - name: Run Tests
         run: |
-         & "build/bin/tests.exe"
+         & "./build/bin/tests"
         shell: pwsh
 
       - name: Generate SHA-256 hashes on Windows
