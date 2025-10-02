@@ -16,7 +16,6 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/libcpr/cpr.git
         GIT_TAG 1.12.0
 )
-set(CPR_USE_SYSTEM_CURL ON)
 FetchContent_Declare(
         json
         GIT_REPOSITORY https://github.com/nlohmann/json.git
