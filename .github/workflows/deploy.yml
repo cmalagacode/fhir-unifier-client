@@ -4,7 +4,6 @@ on:
   push:
     tags: v*
 
-
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -33,8 +32,16 @@ jobs:
 
       - name: Run Tests
         run: |
-         & "./build/bin/Release/tests.exe"
+          & "./build/bin/Release/tests.exe"
         shell: pwsh
+
+      - name: Remove test binary
+        run: Remove-Item -Path "./build/bin/Release/tests.exe" -ErrorAction SilentlyContinue
+        shell: pwsh
+
+      - name: Move Windows binaries up
+        run: mv build/bin/Release/* build/bin/
+        shell: bash
 
       - name: Generate SHA-256 hashes on Windows
         run: |
@@ -48,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-binary
-          path: build/bin/
+          path: ./build/bin/
 
   build-linux:
     needs: build-windows
@@ -72,6 +79,10 @@ jobs:
       - name: Run Tests
         run: ./build/bin/tests
 
+      - name: Remove test binary
+        run: rm -f ./build/bin/tests
+        shell: bash
+
       - name: Generate SHA-256 hashes
         run: |
           find build/bin/ -type f -exec shasum -a 256 {} \; >> build/bin/checksums.txt
@@ -80,7 +91,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-binary
-          path: build/bin/
+          path: ./build/bin/
 
   build-macos:
     needs: build-linux
@@ -97,14 +108,18 @@ jobs:
 
       - name: Configure Release Build Script
         run: cmake -S . -B build -DCPR_USE_SYSTEM_CURL=ON \
-                -DCMAKE_PREFIX_PATH="$(brew --prefix curl)" \
-                -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_PREFIX_PATH="$(brew --prefix curl)" \
+          -DCMAKE_BUILD_TYPE=Release
 
       - name: Build Executable
         run: cmake --build build
 
       - name: Run Tests
         run: ./build/bin/tests
+
+      - name: Remove test binary
+        run: rm -f ./build/bin/tests
+        shell: bash
 
       - name: Generate SHA-256 hashes
         run: |
@@ -114,7 +129,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-binary
-          path: build/bin/
+          path: ./build/bin/
 
   release:
     needs: [build-linux, build-windows, build-macos]
@@ -124,12 +139,6 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           path: release-assets
-
-      - name: Consolidate Checksums
-        run: |
-          cp release-assets/Windows-binary/checksums.txt release-assets/checksums/windows-checksums.txt || echo "No Windows checksums"
-          cp release-assets/Linux-binary/checksums.txt release-assets/checksums/linux-checksums.txt || echo "No Linux checksums"
-          cp release-assets/macOS-binary/checksums.txt release-assets/checksums/macos-checksums.txt || echo "No macOS checksums"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
