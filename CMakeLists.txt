@@ -12,17 +12,22 @@ FetchContent_Declare(
         GIT_TAG v3.10.0
 )
 FetchContent_Declare(
-        cpr
-        GIT_REPOSITORY https://github.com/libcpr/cpr.git
-        GIT_TAG 1.12.0
-)
-FetchContent_Declare(
         json
         GIT_REPOSITORY https://github.com/nlohmann/json.git
         GIT_TAG v3.12.0
 )
+if (WIN32)
+    find_package(CPR REQUIRED)
+else()
+    set(CPR_USE_SYSTEM_CURL ON)
+    FetchContent_Declare(
+            cpr
+            GIT_REPOSITORY https://github.com/libcpr/cpr.git
+            GIT_TAG 1.12.0
+    )
+    FetchContent_MakeAvailable(cpr)
+endif()
 FetchContent_MakeAvailable(catch2)
-FetchContent_MakeAvailable(cpr)
 FetchContent_MakeAvailable(json)
 add_subdirectory(src)
 add_subdirectory(tests)
