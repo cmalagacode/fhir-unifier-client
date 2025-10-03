@@ -47,7 +47,7 @@ jobs:
         run: |
           Get-ChildItem build/bin/*.exe | ForEach-Object {
             $hash = Get-FileHash $_.FullName -Algorithm SHA256
-            "$($_.Name) $($hash.Hash)" | Out-File -Append build/bin/checksums.txt
+            "$($_.Name) $($hash.Hash)" | Out-File -Append build/bin/checksums-windows.txt
           }
         shell: pwsh
 
@@ -85,7 +85,7 @@ jobs:
 
       - name: Generate SHA-256 hashes
         run: |
-          find build/bin/ -type f -exec shasum -a 256 {} \; >> build/bin/checksums.txt
+          find build/bin/ -type f -exec shasum -a 256 {} \; >> build/bin/checksums-linux.txt
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
@@ -123,7 +123,7 @@ jobs:
 
       - name: Generate SHA-256 hashes
         run: |
-          find build/bin/ -type f -exec shasum -a 256 {} \; >> build/bin/checksums.txt
+          find build/bin/ -type f -exec shasum -a 256 {} \; >> build/bin/checksums-macos.txt
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
@@ -145,6 +145,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
+          overwrite: true
           files: |
             release-assets/Windows-binary/*
             release-assets/Linux-binary/*
