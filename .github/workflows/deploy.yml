@@ -49,7 +49,7 @@ jobs:
 
       - name: Generate SHA-256 hashes
         run: |
-          Get-ChildItem build/bin/* | ForEach-Object {
+          Get-ChildItem build/bin/* -File | ForEach-Object {
             $hash = Get-FileHash $_.FullName -Algorithm SHA256
             "$($_.Name) $($hash.Hash)" | Out-File -Append build/bin/checksums-windows.txt
           }
