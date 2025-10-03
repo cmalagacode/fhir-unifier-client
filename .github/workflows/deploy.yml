@@ -1,0 +1,172 @@
+name: deploy.yml
+
+on:
+  push:
+    tags: v*
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Install vcpkg and dependencies
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          ./vcpkg/bootstrap-vcpkg.bat
+          ./vcpkg/vcpkg install curl cpr
+
+      - name: Configure Release Build
+        run: |
+          cmake -S . -B build `
+                -DCMAKE_BUILD_TYPE=Release `
+                -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        shell: pwsh
+
+      - name: Build Executable
+        run: cmake --build build --config Release
+
+      - name: Run Tests
+        run: |
+          & "./build/bin/Release/tests.exe"
+        shell: pwsh
+
+      - name: Remove test binary
+        run: Remove-Item -Path "./build/bin/Release/tests.exe" -ErrorAction SilentlyContinue
+        shell: pwsh
+
+      - name: Move Windows binaries up
+        run: mv build/bin/Release/* build/bin/
+        shell: bash
+
+      - name: Rename executable
+        run: mv build/bin/fhir_unifier_client.exe build/bin/fhir_unifier_windows.exe
+        shell: bash
+
+      - name: Generate SHA-256 hashes
+        run: |
+          Get-ChildItem build/bin/* -File | ForEach-Object {
+            $hash = Get-FileHash $_.FullName -Algorithm SHA256
+            "$($_.Name) $($hash.Hash)" | Out-File -Append build/bin/checksums-windows.txt
+          }
+        shell: pwsh
+
+      - name: Zip Windows binaries
+        run: |
+          Compress-Archive -Path build/bin/* -DestinationPath build/fhir_unifier_windows.zip
+        shell: pwsh
+
+      - name: Upload Zipped Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-zip
+          path: ./build/fhir_unifier_windows.zip
+
+  build-linux:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Install curl dev package
+        run: sudo apt update && sudo apt install libcurl4-openssl-dev -y
+
+      - name: Configure Release Build Script
+        run: cmake -S . -B build -DCPR_USE_SYSTEM_CURL=ON -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build Executable
+        run: cmake --build build
+
+      - name: Run Tests
+        run: ./build/bin/tests
+
+      - name: Remove test binary
+        run: rm -f ./build/bin/tests
+        shell: bash
+
+      - name: Rename executable
+        run: mv build/bin/fhir_unifier_client build/bin/fhir_unifier_linux
+
+      - name: Generate SHA-256 hashes
+        run: |
+          find build/bin/ -type f -exec shasum -a 256 {} \; >> build/bin/checksums-linux.txt
+
+      - name: Zip Linux binaries
+        run: zip -j build/fhir_unifier_linux.zip build/bin/*
+
+      - name: Upload Zipped Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux-zip
+          path: ./build/fhir_unifier_linux.zip
+
+  build-macos:
+    needs: build-linux
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Configure Release Build Script
+        run: cmake -S . -B build -DCPR_USE_SYSTEM_CURL=ON \
+          -DCMAKE_PREFIX_PATH="$(brew --prefix curl)" \
+          -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build Executable
+        run: cmake --build build
+
+      - name: Run Tests
+        run: ./build/bin/tests
+
+      - name: Remove test binary
+        run: rm -f ./build/bin/tests
+        shell: bash
+
+      - name: Rename executable
+        run: mv build/bin/fhir_unifier_client build/bin/fhir_unifier_macos
+
+      - name: Generate SHA-256 hashes
+        run: |
+          find build/bin/ -type f -exec shasum -a 256 {} \; >> build/bin/checksums-macos.txt
+
+      - name: Zip macOS binaries
+        run: zip -j build/fhir_unifier_macos.zip build/bin/*
+
+      - name: Upload Zipped Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macOS-zip
+          path: ./build/fhir_unifier_macos.zip
+
+  release:
+    needs: [build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: release-assets
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          files: |
+            release-assets/Windows-zip/fhir_unifier_windows.zip
+            release-assets/Linux-zip/fhir_unifier_linux.zip
+            release-assets/macOS-zip/fhir_unifier_macos.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
