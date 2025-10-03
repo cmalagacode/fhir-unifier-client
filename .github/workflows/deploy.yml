@@ -118,9 +118,6 @@ jobs:
       - name: Setup CMake
         uses: lukka/get-cmake@latest
 
-      - name: Install curl
-        run: brew install curl
-
       - name: Configure Release Build Script
         run: cmake -S . -B build -DCPR_USE_SYSTEM_CURL=ON \
           -DCMAKE_PREFIX_PATH="$(brew --prefix curl)" \
@@ -166,7 +163,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          overwrite: true
           files: |
             release-assets/Windows-zip/fhir_unifier_windows.zip
             release-assets/Linux-zip/fhir_unifier_linux.zip

@@ -7,6 +7,7 @@
 #include <semaphore>
 #include <sstream>
 #include <string>
+#include <cstdlib>
 
 namespace Proc {
     ConciseModel::ConciseModel(
@@ -85,7 +86,7 @@ namespace Proc {
         std::ifstream file(filePath);
         std::vector<std::string> npiData;
 
-        bool containsHeadersParsed = containsHeaders == "true" ? true : false;
+        bool containsHeadersParsed = containsHeaders == "true";
         std::size_t npiIndexParsed = getNpiIndex(npiIndex);
 
         if (this->isValidFile(filePath) && filePath.ends_with(".csv")
@@ -317,7 +318,12 @@ namespace Proc {
         std::map<std::string, std::string> mappedArgs{};
         const auto arguments = this->getArgs();
         for (std::size_t i = 1; i < this->getArgc(); i++) {
-            if (i == 1) { mappedArgs["filePath"] = arguments[i]; }
+            if (arguments[i].find("--filePath=") != std::string::npos) {
+                const auto filePath = arguments[i].substr(
+                        arguments[i].find("=") + 1,
+                        arguments[i].length() - arguments[i].find("=") - 1);
+                mappedArgs["filePath"] = filePath;
+            }
             else if (arguments[i].compare("--del=comma") == 0) {
                 mappedArgs["inputFileDelimiter"] = ",";
             }
@@ -344,6 +350,17 @@ namespace Proc {
                         arguments[i].find("=") + 1,
                         arguments[i].length() - arguments[i].find("=") - 1);
                 mappedArgs["targets"] = targets;
+            } else {
+                std::cout << "=====================================" << "\n";
+                std::cout << "Please Provide All Necessary Args:" << "\n";
+                std::cout << "--filePath=/example/file.txt" << "\n";
+                std::cout << "--del=comma (only comma delimited supported now)" << "\n";
+                std::cout << "--headers=true OR --headers=false" << "\n";
+                std::cout << "--npiColumn=7 (index of column Ex: 0 or 1 or 2)" << "\n";
+                std::cout << "--apiUrl=https://example-url/example/" << "\n";
+                std::cout << "--target=TARGET1,TARGET2,TARGET3 (targets are comma delimited array)" << "\n";
+                std::cout << "=====================================" << "\n";
+                exit(EXIT_SUCCESS);
             }
         }
         return mappedArgs;
