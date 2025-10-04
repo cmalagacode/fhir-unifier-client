@@ -393,7 +393,8 @@ namespace Proc {
 
         std::vector<std::future<std::string>> futures;
         unsigned int maxNumThreads = std::thread::hardware_concurrency();
-        std::counting_semaphore<std::numeric_limits<int>::max()> sem(maxNumThreads); // max concurrent tasks
+        constexpr int maxPermits = 1024;
+        std::counting_semaphore<maxPermits> sem(maxNumThreads); // max concurrent tasks
         std::cout << "Max # Threads For Concurrency: " << maxNumThreads << "\n";
         for (auto& target: splitTargets) {
             std::string apiUrl = mappedArgs["apiUrl"];
