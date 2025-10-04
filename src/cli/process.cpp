@@ -392,7 +392,9 @@ namespace Proc {
         auto splitTargets = this->splitTargets(mappedArgs["targets"]);
 
         std::vector<std::future<std::string>> futures;
-        std::counting_semaphore<70> sem(70); // max 70 concurrent tasks
+        unsigned int maxNumThreads = std::thread::hardware_concurrency();
+        std::counting_semaphore<std::numeric_limits<int>::max()> sem(maxNumThreads); // max concurrent tasks
+        std::cout << "Max # Threads For Concurrency: " << maxNumThreads << "\n";
         for (auto& target: splitTargets) {
             std::string apiUrl = mappedArgs["apiUrl"];
 
