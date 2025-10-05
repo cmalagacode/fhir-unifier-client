@@ -122,7 +122,7 @@ namespace Proc {
                                  std::string model, std::string target)
     {
         cpr::Response response = Cli::requestData(url, npi, model, target);
-        if (response.status_code == 200 && response.text.size() > 0) {
+        if (response.status_code == 200) {
             nlohmann::json jsonData = nlohmann::json::parse(response.text);
 
             std::string npiValue{};
@@ -288,7 +288,7 @@ namespace Proc {
                     targetTemp);
             return result.toString();
         }
-        return "NULL-> " + npi + " ->" + target;
+        return std::format("INVALID;STATUS_CODE;ISSUE;---> npi:{},target:{},status_code:{}", npi, target, response.status_code);
     }
 
     cpr::Response Cli::requestData(std::string url, std::string npi,
@@ -417,7 +417,7 @@ namespace Proc {
             int i = 0;
             for (auto& future: futures) {
                 auto result = future.get();
-                if (result.find("NULL") != std::string::npos) {
+                if (result.find("INVALID;STATUS_CODE;ISSUE;--->") != std::string::npos) {
                     std::fstream errorFile(std::format("{}_error.txt", target),
                                            std::ios::app);
                     if (errorFile.is_open()) { errorFile << result << "\n"; }
