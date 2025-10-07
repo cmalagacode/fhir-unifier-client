@@ -23,45 +23,45 @@ namespace Proc {
             nlohmann::json npiRegistryAddresses,
             nlohmann::json practitionerModel, nlohmann::json organizationModel,
             nlohmann::json locationModel, std::string target)
-        : npi{npi}, npiRegistryEnumerationType{npiRegistryEnumerationType},
-          npiRegistryCredentials{npiRegistryCredentials},
-          npiRegistrySex{npiRegistrySex}, npiRegistryStatus{npiRegistryStatus},
-          npiRegistryFirstName{npiRegistryFirstName},
-          npiRegistryLastName{npiRegistryLastName},
-          npiRegistryMiddleName{npiRegistryMiddleName},
-          npiRegistrySoleProprietor{npiRegistrySoleProprietor},
-          npiRegistryEnumerationDate{npiRegistryEnumerationDate},
-          npiRegistryLastUpdated{npiRegistryLastUpdated},
-          npiRegistryCertificationDate{npiRegistryCertificationDate},
-          npiRegistryTaxonomies{npiRegistryTaxonomies},
-          npiRegistryAddresses{npiRegistryAddresses},
-          practitionerModel{practitionerModel},
-          organizationModel{organizationModel}, locationModel{locationModel},
-          target{target}
+        : npi_{npi}, npiRegistryEnumerationType_{npiRegistryEnumerationType},
+          npiRegistryCredentials_{npiRegistryCredentials},
+          npiRegistrySex_{npiRegistrySex}, npiRegistryStatus_{npiRegistryStatus},
+          npiRegistryFirstName_{npiRegistryFirstName},
+          npiRegistryLastName_{npiRegistryLastName},
+          npiRegistryMiddleName_{npiRegistryMiddleName},
+          npiRegistrySoleProprietor_{npiRegistrySoleProprietor},
+          npiRegistryEnumerationDate_{npiRegistryEnumerationDate},
+          npiRegistryLastUpdated_{npiRegistryLastUpdated},
+          npiRegistryCertificationDate_{npiRegistryCertificationDate},
+          npiRegistryTaxonomies_(npiRegistryTaxonomies),
+          npiRegistryAddresses_(npiRegistryAddresses),
+          practitionerModel_(practitionerModel),
+          organizationModel_(organizationModel), locationModel_(locationModel),
+          target_{target}
     {}
 
     std::string ConciseModel::toString()
     {
         return std::format(
                 "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n",
-                this->npi, this->npiRegistryEnumerationType,
-                this->npiRegistryCredentials, this->npiRegistrySex,
-                this->npiRegistryStatus, this->npiRegistryFirstName,
-                this->npiRegistryLastName, this->npiRegistryMiddleName,
-                this->npiRegistrySoleProprietor,
-                this->npiRegistryEnumerationDate, this->npiRegistryLastUpdated,
-                this->npiRegistryCertificationDate,
-                nlohmann::to_string(this->npiRegistryTaxonomies),
-                nlohmann::to_string(this->npiRegistryAddresses),
-                nlohmann::to_string(this->practitionerModel),
-                nlohmann::to_string(this->organizationModel),
-                nlohmann::to_string(this->locationModel), this->target);
+                this->npi_, this->npiRegistryEnumerationType_,
+                this->npiRegistryCredentials_, this->npiRegistrySex_,
+                this->npiRegistryStatus_, this->npiRegistryFirstName_,
+                this->npiRegistryLastName_, this->npiRegistryMiddleName_,
+                this->npiRegistrySoleProprietor_,
+                this->npiRegistryEnumerationDate_, this->npiRegistryLastUpdated_,
+                this->npiRegistryCertificationDate_,
+                this->npiRegistryTaxonomies_.dump(),
+                this->npiRegistryAddresses_.dump(),
+                this->practitionerModel_.dump(),
+                this->organizationModel_.dump(),
+                this->locationModel_.dump(), this->target_);
     }
 
     Cli::Cli(const std::int32_t argc, const std::vector<std::string>& argv)
     {
-        this->argc = argc;
-        this->argv = argv;
+        this->argc_ = argc;
+        this->argv_ = argv;
     }
 
     bool Cli::isValidFile(const std::string& path)
@@ -137,11 +137,11 @@ namespace Proc {
             std::string npiRegistryEnumerationDate{};
             std::string npiRegistryLastUpdated{};
             std::string npiRegistryCertificationDate{};
-            nlohmann::json npiRegistryTaxonomies{};
-            nlohmann::json npiRegistryAddresses{};
-            nlohmann::json practitionerModel{};
-            nlohmann::json organizationModel{};
-            nlohmann::json locationModel{};
+            nlohmann::json npiRegistryTaxonomies = nlohmann::json::array();
+            nlohmann::json npiRegistryAddresses = nlohmann::json::array();
+            nlohmann::json practitionerModel = nlohmann::json::array();
+            nlohmann::json organizationModel = nlohmann::json::array();
+            nlohmann::json locationModel = nlohmann::json::array();
             std::string targetTemp{};
 
             if (jsonData.contains("npi") && jsonData["npi"].is_string()) {
@@ -258,22 +258,19 @@ namespace Proc {
                                                ["npiRegistryAddresses"];
             }
 
-            if (jsonData.contains("practitionerModel")
-                && jsonData["practitionerModel"] != NULL) {
+            if (jsonData.contains("practitionerModel")) {
                 practitionerModel = jsonData["practitionerModel"];
             }
 
-            if (jsonData.contains("organizationModel")
-                && jsonData["organizationModel"] != NULL) {
+            if (jsonData.contains("organizationModel")) {
                 organizationModel = jsonData["organizationModel"];
             }
 
-            if (jsonData.contains("locationModel")
-                && jsonData["locationModel"] != NULL) {
+            if (jsonData.contains("locationModel")) {
                 locationModel = jsonData["locationModel"];
             }
 
-            if (jsonData.contains("target") && jsonData["target"].is_string()) {
+            if (jsonData.contains("target")) {
                 targetTemp = jsonData["target"];
             }
 
@@ -305,12 +302,12 @@ namespace Proc {
 
     std::int32_t Cli::getArgc()
     {
-        return this->argc;
+        return this->argc_;
     }
 
     std::vector<std::string> Cli::getArgs()
     {
-        return this->argv;
+        return this->argv_;
     }
 
     std::map<std::string, std::string> Cli::parseArgs()

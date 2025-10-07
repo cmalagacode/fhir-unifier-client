@@ -11,24 +11,24 @@ namespace Proc {
     const std::string CONCISE_MODEL_COL_NAME = "npi|npi_registry_enumeration_type|npi_registry_credential|npi_registry_sex|npi_registry_status|npi_registry_first_name|npi_registry_last_name|npi_registry_middle_name|npi_registry_sole_proprietor|npi_registry_enumeration_date|npi_registry_last_updated|npi_registry_certification_date|npi_registry_taxonomies|npi_registry_addresses|practitioner_model|organization_model|location_model|target";
     class ConciseModel {
     private:
-        std::string npi;
-        std::string npiRegistryEnumerationType;
-        std::string npiRegistryCredentials;
-        std::string npiRegistrySex;
-        std::string npiRegistryStatus;
-        std::string npiRegistryFirstName;
-        std::string npiRegistryLastName;
-        std::string npiRegistryMiddleName;
-        std::string npiRegistrySoleProprietor;
-        std::string npiRegistryEnumerationDate;
-        std::string npiRegistryLastUpdated;
-        std::string npiRegistryCertificationDate;
-        nlohmann::json npiRegistryTaxonomies;
-        nlohmann::json npiRegistryAddresses;
-        nlohmann::json practitionerModel;
-        nlohmann::json organizationModel;
-        nlohmann::json locationModel;
-        std::string target;
+        std::string npi_;
+        std::string npiRegistryEnumerationType_;
+        std::string npiRegistryCredentials_;
+        std::string npiRegistrySex_;
+        std::string npiRegistryStatus_;
+        std::string npiRegistryFirstName_;
+        std::string npiRegistryLastName_;
+        std::string npiRegistryMiddleName_;
+        std::string npiRegistrySoleProprietor_;
+        std::string npiRegistryEnumerationDate_;
+        std::string npiRegistryLastUpdated_;
+        std::string npiRegistryCertificationDate_;
+        nlohmann::json npiRegistryTaxonomies_;
+        nlohmann::json npiRegistryAddresses_;
+        nlohmann::json practitionerModel_;
+        nlohmann::json organizationModel_;
+        nlohmann::json locationModel_;
+        std::string target_;
     public:
         ConciseModel(
             std::string npi,
@@ -54,8 +54,8 @@ namespace Proc {
 
     };
     class Cli {
-        std::int32_t argc;
-        std::vector<std::string> argv;
+        std::int32_t argc_;
+        std::vector<std::string> argv_;
     public:
         Cli(std::int32_t argc, const std::vector<std::string>& argv);
         void init();
