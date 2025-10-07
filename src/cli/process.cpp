@@ -177,7 +177,8 @@ namespace Proc {
     {
         cpr::Response response = Cli::requestData(url, npi, model, target);
         if (response.status_code == 200) {
-            nlohmann::json jsonData = Cli::parseJsonString(Cli::stripBom(response.text));
+            std::cout << response.text << std::endl;
+            nlohmann::json jsonData = Cli::parseJsonString(response.text);
 
             std::string npiValue{};
             std::string npiRegistryEnumerationType{};
