@@ -33,10 +33,10 @@ namespace Proc {
           npiRegistryEnumerationDate_{npiRegistryEnumerationDate},
           npiRegistryLastUpdated_{npiRegistryLastUpdated},
           npiRegistryCertificationDate_{npiRegistryCertificationDate},
-          npiRegistryTaxonomies_{npiRegistryTaxonomies},
-          npiRegistryAddresses_{npiRegistryAddresses},
-          practitionerModel_{practitionerModel},
-          organizationModel_{organizationModel}, locationModel_{locationModel},
+          npiRegistryTaxonomies_(npiRegistryTaxonomies),
+          npiRegistryAddresses_(npiRegistryAddresses),
+          practitionerModel_(practitionerModel),
+          organizationModel_(organizationModel), locationModel_(locationModel),
           target_{target}
     {}
 
@@ -137,11 +137,11 @@ namespace Proc {
             std::string npiRegistryEnumerationDate{};
             std::string npiRegistryLastUpdated{};
             std::string npiRegistryCertificationDate{};
-            nlohmann::json npiRegistryTaxonomies;
-            nlohmann::json npiRegistryAddresses;
-            nlohmann::json practitionerModel;
-            nlohmann::json organizationModel;
-            nlohmann::json locationModel;
+            nlohmann::json npiRegistryTaxonomies = nlohmann::json::array();
+            nlohmann::json npiRegistryAddresses = nlohmann::json::array();
+            nlohmann::json practitionerModel = nlohmann::json::array();
+            nlohmann::json organizationModel = nlohmann::json::array();
+            nlohmann::json locationModel = nlohmann::json::array();
             std::string targetTemp{};
 
             if (jsonData.contains("npi") && jsonData["npi"].is_string()) {
@@ -247,7 +247,6 @@ namespace Proc {
             if (jsonData.contains("npiRegistryConciseModel")
                 && jsonData["npiRegistryConciseModel"].contains(
                         "npiRegistryTaxonomies")) {
-                std::cout << jsonData["npiRegistryConciseModel"]["npiRegistryTaxonomies"].dump() << std::endl;
                 npiRegistryTaxonomies = jsonData["npiRegistryConciseModel"]
                                                 ["npiRegistryTaxonomies"];
             }
