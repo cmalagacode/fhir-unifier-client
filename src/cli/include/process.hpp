@@ -77,6 +77,8 @@ namespace Proc {
         std::vector<std::string> getArgs();
         std::int32_t getArgc();
         static std::vector<std::string> splitTargets(const std::string& targets);
+        static std::string stripBom(const std::string& s);
+        static nlohmann::json parseJsonString(const std::string& text);
     };
 
 }

@@ -42,9 +42,6 @@ namespace Proc {
 
     std::string ConciseModel::toString()
     {
-        std::cout << "debug: out is array: " << this->npiRegistryTaxonomies_.is_array() << " inner is array: "  << this->npiRegistryTaxonomies_[0].is_array() << "\n";
-        std::cout << "debug: npiRegistryTaxonomies: " << this->npiRegistryTaxonomies_.dump() << "\n";
-        std::cout << "debug: npiRegistryAddresses: " << this->npiRegistryAddresses_.dump() << "\n";
         return std::format(
                 "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n",
                 this->npi_, this->npiRegistryEnumerationType_,
@@ -121,12 +118,66 @@ namespace Proc {
         return result;
     }
 
+    std::string Cli::stripBom(const std::string& s)
+    {
+        if (s.size() >= 3 &&
+           static_cast<unsigned char>(s[0]) == 0xEF &&
+           static_cast<unsigned char>(s[1]) == 0xBB &&
+           static_cast<unsigned char>(s[2]) == 0xBF) {
+             return s.substr(3);
+        }
+
+        if (s.size() >= 2) {
+            unsigned char b0 = static_cast<unsigned char>(s[0]);
+            unsigned char b1 = static_cast<unsigned char>(s[1]);
+
+            // UTF-16 LE
+            if (b0 == 0xFF && b1 == 0xFE) {
+                return s.substr(2);
+            }
+            // UTF-16 BE
+            if (b0 == 0xFE && b1 == 0xFF) {
+                return s.substr(2);
+            }
+        }
+
+        if (s.size() >= 4) {
+            unsigned char b0 = static_cast<unsigned char>(s[0]);
+            unsigned char b1 = static_cast<unsigned char>(s[1]);
+            unsigned char b2 = static_cast<unsigned char>(s[2]);
+            unsigned char b3 = static_cast<unsigned char>(s[3]);
+
+            // UTF-32 LE
+            if (b0 == 0xFF && b1 == 0xFE && b2 == 0x00 && b3 == 0x00) {
+                return s.substr(4);
+            }
+            // UTF-32 BE
+            if (b0 == 0x00 && b1 == 0x00 && b2 == 0xFE && b3 == 0xFF) {
+                return s.substr(4);
+            }
+        }
+    }
+
+    nlohmann::json Cli::parseJsonString(const std::string& text)
+    {
+        try {
+            nlohmann::json jsonData = nlohmann::json::parse(text);
+            if (jsonData.is_string()) {
+                std::string inner = jsonData.get<std::string>();
+                return nlohmann::json::parse(inner);
+            }
+            return jsonData;
+        } catch (const nlohmann::json::parse_error& e) {
+            throw;
+        }
+    }
+
     std::string Cli::processData(std::string url, std::string npi,
                                  std::string model, std::string target)
     {
         cpr::Response response = Cli::requestData(url, npi, model, target);
         if (response.status_code == 200) {
-            nlohmann::json jsonData = nlohmann::json::parse(response.text);
+            nlohmann::json jsonData = Cli::parseJsonString(Cli::stripBom(response.text));
 
             std::string npiValue{};
             std::string npiRegistryEnumerationType{};
@@ -140,11 +191,11 @@ namespace Proc {
             std::string npiRegistryEnumerationDate{};
             std::string npiRegistryLastUpdated{};
             std::string npiRegistryCertificationDate{};
-            nlohmann::json npiRegistryTaxonomies;
-            nlohmann::json npiRegistryAddresses;
-            nlohmann::json practitionerModel;
-            nlohmann::json organizationModel;
-            nlohmann::json locationModel;
+            nlohmann::json npiRegistryTaxonomies{};
+            nlohmann::json npiRegistryAddresses{};
+            nlohmann::json practitionerModel{};
+            nlohmann::json organizationModel{};
+            nlohmann::json locationModel{};
             std::string targetTemp{};
 
             if (jsonData.contains("npi") && jsonData["npi"].is_string()) {
@@ -261,22 +312,19 @@ namespace Proc {
                                                ["npiRegistryAddresses"];
             }
 
-            if (jsonData.contains("practitionerModel")
-                && jsonData["practitionerModel"] != NULL) {
+            if (jsonData.contains("practitionerModel")) {
                 practitionerModel = jsonData["practitionerModel"];
             }
 
-            if (jsonData.contains("organizationModel")
-                && jsonData["organizationModel"] != NULL) {
+            if (jsonData.contains("organizationModel")) {
                 organizationModel = jsonData["organizationModel"];
             }
 
-            if (jsonData.contains("locationModel")
-                && jsonData["locationModel"] != NULL) {
+            if (jsonData.contains("locationModel")) {
                 locationModel = jsonData["locationModel"];
             }
 
-            if (jsonData.contains("target") && jsonData["target"].is_string()) {
+            if (jsonData.contains("target")) {
                 targetTemp = jsonData["target"];
             }
 
