@@ -390,15 +390,17 @@ namespace Proc {
 
         std::vector<std::future<std::string>> futures;
         unsigned int maxNumThreads = std::thread::hardware_concurrency();
-        constexpr int maxPermits = 4; // Implement throttling to respect NPI Registry API’s undocumented rate and usage limits
-        std::counting_semaphore<maxPermits> sem(maxPermits); // max concurrent tasks
+        constexpr unsigned int maxPermits = 4;
+        unsigned int actualPermits = (maxNumThreads < maxPermits) ? maxNumThreads : maxPermits;
+        // Implement throttling to respect NPI Registry API’s undocumented rate and usage limits
+        std::counting_semaphore<maxPermits> sem(actualPermits); // max concurrent tasks
         std::cout << "Max # threads on host: " << maxNumThreads << "\n";
-        std::cout << "Max # threads used for execution: " << maxPermits << "\n";
+        std::cout << "Max # threads used for execution: " << actualPermits << "\n";
         for (auto& target: splitTargets) {
             std::string apiUrl = mappedArgs["apiUrl"];
 
             for (auto& npi: data["npi"]) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                std::this_thread::sleep_for(std::chrono::milliseconds(170));
                 sem.acquire(); // wait if too many tasks are running
                 npi.erase(std::remove(npi.begin(), npi.end(), '"'), npi.end());
                 futures.push_back(std::async(
