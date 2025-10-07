@@ -124,10 +124,6 @@ namespace Proc {
         cpr::Response response = Cli::requestData(url, npi, model, target);
         if (response.status_code == 200) {
             nlohmann::json jsonData = nlohmann::json::parse(response.text);
-            if (jsonData["npiRegistryTaxonomies"][0].is_array()) {
-                std::cout << jsonData["npiRegistryTaxonomies"][0].dump() << std::endl;
-            }
-
 
             std::string npiValue{};
             std::string npiRegistryEnumerationType{};
@@ -251,6 +247,7 @@ namespace Proc {
             if (jsonData.contains("npiRegistryConciseModel")
                 && jsonData["npiRegistryConciseModel"].contains(
                         "npiRegistryTaxonomies")) {
+                std::cout << jsonData["npiRegistryConciseModel"]["npiRegistryTaxonomies"].dump() << std::endl;
                 npiRegistryTaxonomies = jsonData["npiRegistryConciseModel"]
                                                 ["npiRegistryTaxonomies"];
             }
