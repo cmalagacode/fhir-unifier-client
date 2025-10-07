@@ -390,8 +390,8 @@ namespace Proc {
 
         std::vector<std::future<std::string>> futures;
         unsigned int maxNumThreads = std::thread::hardware_concurrency();
-        constexpr int maxPermits = 4;
-        unsigned int actualPermits = std::min(static_cast<unsigned int>(maxPermits), maxNumThreads);
+        constexpr unsigned int maxPermits = 4;
+        unsigned int actualPermits = std::min(maxPermits, maxNumThreads);
         // Implement throttling to respect NPI Registry API’s undocumented rate and usage limits
         std::counting_semaphore<maxPermits> sem(actualPermits); // max concurrent tasks
         std::cout << "Max # threads on host: " << maxNumThreads << "\n";
