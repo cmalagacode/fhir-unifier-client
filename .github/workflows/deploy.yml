@@ -24,6 +24,7 @@ jobs:
         run: |
           cmake -S . -B build `
                 -DCMAKE_BUILD_TYPE=Release `
+                -G "Visual Studio 17 2022" -A x64 `
                 -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
         shell: pwsh
 
@@ -167,6 +168,5 @@ jobs:
             release-assets/Windows-zip/fhir_unifier_windows.zip
             release-assets/Linux-zip/fhir_unifier_linux.zip
             release-assets/macOS-zip/fhir_unifier_macos.zip
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
