@@ -42,6 +42,8 @@ namespace Proc {
 
     std::string ConciseModel::toString()
     {
+        std::cout << "debug: npiRegistryTaxonomies: " << this->npiRegistryTaxonomies.dump() << "\n";
+        std::cout << "debug: npiRegistryAddresses: " << this->npiRegistryAddresses.dump() << "\n";
         return std::format(
                 "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n",
                 this->npi, this->npiRegistryEnumerationType,
@@ -51,11 +53,11 @@ namespace Proc {
                 this->npiRegistrySoleProprietor,
                 this->npiRegistryEnumerationDate, this->npiRegistryLastUpdated,
                 this->npiRegistryCertificationDate,
-                nlohmann::to_string(this->npiRegistryTaxonomies),
-                nlohmann::to_string(this->npiRegistryAddresses),
-                nlohmann::to_string(this->practitionerModel),
-                nlohmann::to_string(this->organizationModel),
-                nlohmann::to_string(this->locationModel), this->target);
+                this->npiRegistryTaxonomies.dump(),
+                this->npiRegistryAddresses.dump(),
+                this->practitionerModel.dump(),
+                this->organizationModel.dump(),
+                this->locationModel.dump(), this->target);
     }
 
     Cli::Cli(const std::int32_t argc, const std::vector<std::string>& argv)
