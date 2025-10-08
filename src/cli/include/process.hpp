@@ -8,7 +8,7 @@
 #include <nlohmann/json.hpp>
 
 namespace Proc {
-    const std::string CONCISE_MODEL_COL_NAME = "npi,npi_registry_enumeration_type,npi_registry_credential,npi_registry_sex,npi_registry_status,npi_registry_first_name,npi_registry_last_name,npi_registry_middle_name,npi_registry_sole_proprietor,npi_registry_enumeration_date,npi_registry_last_updated,npi_registry_certification_date,npi_registry_taxonomies,npi_registry_addresses,practitioner_model,organization_model,location_model,target";
+    const std::string CONCISE_MODEL_COL_NAME = "npi|npi_registry_enumeration_type|npi_registry_credential|npi_registry_sex|npi_registry_status|npi_registry_first_name|npi_registry_last_name|npi_registry_middle_name|npi_registry_sole_proprietor|npi_registry_enumeration_date|npi_registry_last_updated|npi_registry_certification_date|npi_registry_taxonomies|npi_registry_addresses|practitioner_model|organization_model|location_model|target";
     class ConciseModel {
     private:
         std::string npi_;
