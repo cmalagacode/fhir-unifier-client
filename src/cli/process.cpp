@@ -43,7 +43,7 @@ namespace Proc {
     std::string ConciseModel::toString()
     {
         return std::format(
-                "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n",
+                "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n",
                 this->npi_, this->npiRegistryEnumerationType_,
                 this->npiRegistryCredentials_, this->npiRegistrySex_,
                 this->npiRegistryStatus_, this->npiRegistryFirstName_,
@@ -285,7 +285,7 @@ namespace Proc {
                     targetTemp);
             return result.toString();
         }
-        return std::format("<-- INVALID;STATUS_CODE;ISSUE;--->\n\n{},{},{}\n", npi, target, response.status_code);
+        return std::format("<-- INVALID;STATUS_CODE;ISSUE;--->\n{},{},{}\n", npi, target, response.status_code);
     }
 
     cpr::Response Cli::requestData(std::string url, std::string npi,
@@ -396,9 +396,9 @@ namespace Proc {
         std::counting_semaphore<maxPermits> sem(actualPermits); // max concurrent tasks
         std::cout << "Max # threads on host: " << maxNumThreads << "\n";
         std::cout << "Max # threads used for execution: " << actualPermits << "\n";
+        int i = 0;
         for (auto& target: splitTargets) {
             std::string apiUrl = mappedArgs["apiUrl"];
-            int i = 0;
             for (auto& npi: data["npi"]) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(170));
                 sem.acquire(); // wait if too many tasks are running
@@ -417,13 +417,16 @@ namespace Proc {
                     for (auto& future: futures) {
                         auto result = future.get();
                         if (result.find("<-- INVALID;STATUS_CODE;ISSUE;--->") != std::string::npos) {
-                            std::fstream errorFile("error_report.txt",
+                            std::fstream errorFile("error_report.csv",
                                                    std::ios::app);
-                            if (errorFile.is_open()) { errorFile << result << "\n"; }
+                            if (errorFile.is_open()) {
+                                result.erase(0, 36);
+                                errorFile << result << "\n";
+                            }
                             errorFile.close();
                         }
                         else {
-                            std::fstream outputFile("provider_report.txt",
+                            std::fstream outputFile("provider_report.csv",
                                                     std::ios::app);
 
                             if (outputFile.is_open() && i == 0) {
@@ -444,13 +447,16 @@ namespace Proc {
             for (auto& future: futures) {
                 auto result = future.get();
                 if (result.find("<-- INVALID;STATUS_CODE;ISSUE;--->") != std::string::npos) {
-                    std::fstream errorFile("error_report.txt",
+                    std::fstream errorFile("error_report.csv",
                                            std::ios::app);
-                    if (errorFile.is_open()) { errorFile << result << "\n"; }
+                    if (errorFile.is_open()) {
+                        result.erase(0, 36);
+                        errorFile << result << "\n";
+                    }
                     errorFile.close();
                 }
                 else {
-                    std::fstream outputFile("provider_report.txt",
+                    std::fstream outputFile("provider_report.csv",
                                             std::ios::app);
 
                     if (outputFile.is_open() && i == 0) {
