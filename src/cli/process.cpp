@@ -421,7 +421,7 @@ namespace Proc {
                                                    std::ios::app);
                             if (errorFile.is_open()) {
                                 result.erase(0, 36);
-                                errorFile << result << "\n";
+                                errorFile << result;
                             }
                             errorFile.close();
                         }
@@ -451,7 +451,7 @@ namespace Proc {
                                            std::ios::app);
                     if (errorFile.is_open()) {
                         result.erase(0, 36);
-                        errorFile << result << "\n";
+                        errorFile << result;
                     }
                     errorFile.close();
                 }
