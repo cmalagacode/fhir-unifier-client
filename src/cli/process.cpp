@@ -43,7 +43,7 @@ namespace Proc {
     std::string ConciseModel::toString()
     {
         return std::format(
-                "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n",
+                "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}\n",
                 this->npi_, this->npiRegistryEnumerationType_,
                 this->npiRegistryCredentials_, this->npiRegistrySex_,
                 this->npiRegistryStatus_, this->npiRegistryFirstName_,
@@ -426,7 +426,7 @@ namespace Proc {
                             errorFile.close();
                         }
                         else {
-                            std::fstream outputFile("provider_report.csv",
+                            std::fstream outputFile("provider_report.txt",
                                                     std::ios::app);
 
                             if (outputFile.is_open() && i == 0) {
@@ -456,7 +456,7 @@ namespace Proc {
                     errorFile.close();
                 }
                 else {
-                    std::fstream outputFile("provider_report.csv",
+                    std::fstream outputFile("provider_report.txt",
                                             std::ios::app);
 
                     if (outputFile.is_open() && i == 0) {
