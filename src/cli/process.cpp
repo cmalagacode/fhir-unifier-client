@@ -315,14 +315,52 @@ namespace Proc {
         std::map<std::string, std::string> mappedArgs{};
         const auto arguments = this->getArgs();
         for (std::size_t i = 1; i < this->getArgc(); i++) {
+            if (i == 1 && arguments[i].find("help") != std::string::npos ||
+                i == 1 && arguments[i].find("--help") != std::string::npos ||
+                i == 1 && arguments[i].find("-help") != std::string::npos) {
+                    std::cout << "=====================================" << "\n";
+                    std::cout << "Optional: --help" << "\n";
+                    std::cout << "Required: --filePath=/example/file.txt" << "\n";
+                    std::cout << "Required: --del=comma (comma, pipe)" << "\n";
+                    std::cout << "Required: --headers=true OR --headers=false" << "\n";
+                    std::cout << "Required: --npiColumn=7 (index of column Ex: 0 or 1 or 2)" << "\n";
+                    std::cout << "Required: --apiUrl=https://example-url/example/" << "\n";
+                    std::cout << "Required: --target=TARGET1,TARGET2,TARGET3 (targets are comma delimited array)" << "\n";
+                    std::cout << "OR\n";
+                    std::cout << "Optional: -help" << "\n";
+                    std::cout << "Required: -fp=/example/file.txt" << "\n";
+                    std::cout << "Required: -del=| (, or |)" << "\n";
+                    std::cout << "Required: -hd=true OR -hd=false" << "\n";
+                    std::cout << "Required: -col=7 (index of column Ex: 0 or 1 or 2)" << "\n";
+                    std::cout << "Required: -url=https://example-url/example/" << "\n";
+                    std::cout << "Required: -tg=TARGET1,TARGET2,TARGET3 (targets are comma delimited array)" << "\n";
+                    std::cout << "=====================================" << "\n";
+                    exit(EXIT_SUCCESS);
+            }
+
             if (arguments[i].find("--filePath=") != std::string::npos) {
                 const auto filePath = arguments[i].substr(
                         arguments[i].find("=") + 1,
                         arguments[i].length() - arguments[i].find("=") - 1);
                 mappedArgs["filePath"] = filePath;
+            } else if (arguments[i].find("-fp=") != std::string::npos) {
+                const auto filePath = arguments[i].substr(
+                    arguments[i].find("=") + 1,
+                    arguments[i].length() - arguments[i].find("=") - 1
+                );
+                mappedArgs["filePath"] = filePath;
             }
             else if (arguments[i].compare("--del=comma") == 0) {
                 mappedArgs["inputFileDelimiter"] = ",";
+            }
+            else if (arguments[i].compare("--del=pipe") == 0) {
+                mappedArgs["inputFileDelimiter"] = "|";
+            }
+            else if (arguments[i].compare("-del=,") == 0) {
+                mappedArgs["inputFileDelimiter"] = ",";
+            }
+            else if (arguments[i].compare("-del=|") == 0) {
+                mappedArgs["inputFileDelimiter"] = "|";
             }
             else if (arguments[i].compare("--headers=true") == 0) {
                 mappedArgs["inputFileHeaders"] = "true";
@@ -330,7 +368,19 @@ namespace Proc {
             else if (arguments[i].compare("--headers=false") == 0) {
                 mappedArgs["inputFileHeaders"] = "false";
             }
+            else if (arguments[i].compare("-hd=true") == 0) {
+                mappedArgs["inputFileHeaders"] = "true";
+            }
+            else if (arguments[i].compare("-hd=false") == 0) {
+                mappedArgs["inputFileHeaders"] = "false";
+            }
             else if (arguments[i].find("--npiColumn=") != std::string::npos) {
+                auto column = arguments[i].substr(
+                        arguments[i].find("=") + 1,
+                        arguments[i].length() - arguments[i].find("=") - 1);
+                mappedArgs["npiColumnIndex"] = column;
+            }
+            else if (arguments[i].find("-col=") != std::string::npos) {
                 auto column = arguments[i].substr(
                         arguments[i].find("=") + 1,
                         arguments[i].length() - arguments[i].find("=") - 1);
@@ -342,20 +392,40 @@ namespace Proc {
                         arguments[i].length() - arguments[i].find("=") - 1);
                 mappedArgs["apiUrl"] = url;
             }
+            else if (arguments[i].find("-url=") != std::string::npos) {
+                auto url = arguments[i].substr(
+                        arguments[i].find("=") + 1,
+                        arguments[i].length() - arguments[i].find("=") - 1);
+                mappedArgs["apiUrl"] = url;
+            }
             else if (arguments[i].find("--target=") != std::string::npos) {
                 auto targets = arguments[i].substr(
                         arguments[i].find("=") + 1,
                         arguments[i].length() - arguments[i].find("=") - 1);
                 mappedArgs["targets"] = targets;
-            } else {
+            } else if (arguments[i].find("-tg=") != std::string::npos) {
+                auto targets = arguments[i].substr(
+                        arguments[i].find("=") + 1,
+                        arguments[i].length() - arguments[i].find("=") - 1);
+                mappedArgs["targets"] = targets;
+            }
+            else {
                 std::cout << "=====================================" << "\n";
-                std::cout << "Please Provide All Necessary Args:" << "\n";
-                std::cout << "--filePath=/example/file.txt" << "\n";
-                std::cout << "--del=comma (only comma delimited supported now)" << "\n";
-                std::cout << "--headers=true OR --headers=false" << "\n";
-                std::cout << "--npiColumn=7 (index of column Ex: 0 or 1 or 2)" << "\n";
-                std::cout << "--apiUrl=https://example-url/example/" << "\n";
-                std::cout << "--target=TARGET1,TARGET2,TARGET3 (targets are comma delimited array)" << "\n";
+                std::cout << "Optional: --help" << "\n";
+                std::cout << "Required: --filePath=/example/file.txt" << "\n";
+                std::cout << "Required: --del=comma (comma, pipe)" << "\n";
+                std::cout << "Required: --headers=true OR --headers=false" << "\n";
+                std::cout << "Required: --npiColumn=7 (index of column Ex: 0 or 1 or 2)" << "\n";
+                std::cout << "Required: --apiUrl=https://example-url/example/" << "\n";
+                std::cout << "Required: --target=TARGET1,TARGET2,TARGET3 (targets are comma delimited array)" << "\n";
+                std::cout << "OR\n";
+                std::cout << "Optional: -help" << "\n";
+                std::cout << "Required: -fp=/example/file.txt" << "\n";
+                std::cout << "Required: -del=| (, or |)" << "\n";
+                std::cout << "Required: -hd=true OR -hd=false" << "\n";
+                std::cout << "Required: -col=7 (index of column Ex: 0 or 1 or 2)" << "\n";
+                std::cout << "Required: -url=https://example-url/example/" << "\n";
+                std::cout << "Required: -tg=TARGET1,TARGET2,TARGET3 (targets are comma delimited array)" << "\n";
                 std::cout << "=====================================" << "\n";
                 exit(EXIT_SUCCESS);
             }
