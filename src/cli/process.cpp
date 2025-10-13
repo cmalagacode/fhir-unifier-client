@@ -400,7 +400,6 @@ namespace Proc {
         for (auto& target: splitTargets) {
             std::string apiUrl = mappedArgs["apiUrl"];
             for (auto& npi: data["npi"]) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(170));
                 sem.acquire(); // wait if too many tasks are running
                 npi.erase(std::remove(npi.begin(), npi.end(), '"'), npi.end());
                 futures.push_back(std::async(
